@@ -15,19 +15,8 @@
 
     overflow: hidden;
 
-    background: rgb(215, 215, 215);
-    background: -o-radial-gradient(rgb(240, 240, 240), rgb(190, 190, 190));
-    background: -moz-radial-gradient(rgb(240, 240, 240), rgb(190, 190, 190));
-    background: -webkit-radial-gradient(rgb(240, 240, 240), rgb(190, 190, 190));
-    background: -webkit-gradient(
-      radial,
-      50% 50%,
-      0,
-      50% 50%,
-      500,
-      from(rgb(240, 240, 240)),
-      to(rgb(190, 190, 190))
-    );
+    background: #1a1b26;
+    background: radial-gradient(#1a1b26, #2b2c37);
 
     -webkit-font-smoothing: antialiased;
   }
@@ -70,14 +59,15 @@
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
 
-    background-color: white;
-
-    border: 1px solid rgba(0, 0, 0, 0.3);
+    background-color: #1a1b26;
+    /* border: 2px solid rgba(0, 0, 0, 0.3); */
 
     transition: transform 0.3s ease-out;
     -o-transition: -o-transform 0.3s ease-out;
     -moz-transition: -moz-transform 0.3s ease-out;
     -webkit-transition: -webkit-transform 0.3s ease-out;
+
+    box-shadow: 10px 5px 5px #1a1b26;
   }
   .slides.layout-widescreen > article {
     margin-left: -650px;
@@ -264,7 +254,7 @@
 .slides > article {
   font-family: 'Open Sans', Arial, sans-serif;
 
-  color: black;
+  color: #cfcfcf;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 
   font-size: 26px;
@@ -278,14 +268,16 @@ b {
 }
 
 a {
-  color: rgb(0, 102, 204);
+  color: #9f9fcf;
+  font-weight: bold;
+  font-style: italic;
   text-decoration: none;
 }
 a:visited {
-  color: rgba(0, 102, 204, 0.75);
+  color: #9f9fcf;
 }
 a:hover {
-  color: black;
+  color: #cfcfff;
 }
 
 p {
@@ -312,7 +304,7 @@ h1 {
 
   letter-spacing: -3px;
 
-  color: rgb(51, 51, 51);
+  color: #9978d5;
 }
 
 h2 {
@@ -330,12 +322,12 @@ h2 {
 
   letter-spacing: -2px;
 
-  color: rgb(51, 51, 51);
+  color: #9f9fcf;
 }
 
 h3 {
-  font-size: 30px;
-  line-height: 36px;
+  font-size: 36px;
+  line-height: 40px;
 
   padding: 0;
   margin: 0;
@@ -344,16 +336,24 @@ h3 {
   font-weight: 600;
 
   letter-spacing: -1px;
-
-  color: rgb(51, 51, 51);
+ 
+  color: #bfbfef;
 }
+
+/*
+#subtitle {
+  color: #cfcfcf; #9f9fcf
+}
+*/
 
 ul {
   margin: 0;
   padding: 0;
   margin-top: 20px;
   margin-left: 1.5em;
+  list-style-type: square;
 }
+
 li {
   padding: 0;
   margin: 0 0 0.5em 0;
@@ -365,15 +365,15 @@ div.code, div.output {
 }
 
 pre {
-  padding: 5px 10px;
   margin-top: 20px;
   margin-bottom: 20px;
   overflow: hidden;
 
   background: rgb(240, 240, 240);
-  border: 1px solid rgb(224, 224, 224);
+  border: 1px solid rgb(204, 204, 204);
+  border-radius: 5px;
 
-  font-family: 'Droid Sans Mono', 'Courier New', monospace;
+  font-family: 'IBM Plex Mono', 'Droid Sans Mono', monospace;
   font-size: 18px;
   line-height: 24px;
   letter-spacing: -1px;
@@ -388,20 +388,33 @@ pre.numbers span:before {
 }
 
 code {
-  font-size: 95%;
-  font-family: 'Droid Sans Mono', 'Courier New', monospace;
+  font-family: 'IBM Plex Mono', 'Droid Sans Mono', monospace;
 
-  color: black;
+  color: #9ece6a;
 }
 
 pre code {
   font-size: 100%;
 }
 
+.hljs-comment {
+  color: #bfb2a5;
+}
+
 article > .image,
 article > .video {
   text-align: center;
   margin-top: 40px;
+}
+
+article img {
+  display: block;
+  text-align: center;
+  margin: 0 auto;
+  position: relative;
+  top: 50px;
+  border-radius: 5px;
+  height: 500px;
 }
 
 article.background {
@@ -414,10 +427,12 @@ table {
   border-collapse: collapse;
   margin-top: 40px;
 }
+
 th {
   font-weight: 600;
   text-align: left;
 }
+
 td,
 th {
   border: 1px solid rgb(224, 224, 224);
@@ -441,9 +456,11 @@ p.link {
 pre {
   outline: 0px solid transparent;
 }
+
 div.playground {
   position: relative;
 }
+
 div.output {
   position: absolute;
   left: 50%;
@@ -459,6 +476,7 @@ div.output {
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
 }
+
 div.output pre {
   margin: 0;
   padding: 0;
@@ -468,24 +486,29 @@ div.output pre {
   height: 100%;
   overflow: auto;
 }
+
 div.output .stdout,
 div.output pre {
   color: #e6e6e6;
 }
+
 div.output .stderr,
 div.output .error {
   color: rgb(255, 200, 200);
 }
+
 div.output .system,
 div.output .exit {
   color: rgb(255, 230, 120);
 }
+
 .buttons {
   position: relative;
   float: right;
   top: -60px;
   right: 10px;
 }
+
 div.output .buttons {
   position: absolute;
   float: none;
@@ -555,4 +578,10 @@ figcaption {
   -o-border-radius: 10px;
   -moz-border-radius: 10px;
   -webkit-border-radius: 10px;
+}
+
+@media (min-width: 1800px) {
+  body {
+    transform: scale(1.75) !important;
+  }
 }

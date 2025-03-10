@@ -1,0 +1,24 @@
+# Styles of error handling
+
+- throw catch in js
+  - throw catch usage example
+  - deep dive 2 - 3 slides
+    - stack unwinding
+    - problems with exceptions
+- exceptions in type declarations ala Java
+- algebraic effects as related to the throw catch mechanism
+- errors as values
+  - original node js callbacks(err, resource)
+  - example from golang
+  - exaple from zig
+- Promises and rejections
+- Promise.all vs Promise.allResolved
+- async await
+- Maybe monad
+  - examples from rust
+  - examples from ocaml
+- handling errors in http req handlers(continueation passing)
+- cascadding errors across service boundries
+- circuit breaker pattern
+- encapsulating useful behaviour within error objects
+- self reportable errors, self alertable errors ?

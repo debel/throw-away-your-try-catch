@@ -1,0 +1,663 @@
+# Throw away your try/catch
+An exploration of error handling strategies
+
+Mihail Mikov
+Staff Enginner, SumUp
+18.03.2025
+
+## Overview
+
+Error handling is a question of **reliability**. Let's assume 2 main types of approaches:
+* **Correctness** - ensuring that a system behaves according to its specification. Focuses on preventing errors
+* **Recovery** - handling errors when they do occur, acknowledging that no system is perfect. Focuses on resilience
+
+_This presentation focuses on the latter_
+
+## Many types of safety
+
+There are many types of safety in computer science.
+
+* Testing
+* Type safety
+* Memory safety
+* Error correction
+* System invariants
+* Redundnecy
+* Contract-based programming (e.g. Eiffel)
+* Pure functions; avoiding side-effects (e.g. Haskell)
+* Process supervisors (e.g. Erlang)
+
+##
+
+![Let's fix some bugs!](./static/images/fix-some-bugs.jpg)
+
+## Throw/Catch in JavaScript
+
+A try/catch block is the main mechanism for handling exceptions in JavaScript
+
+```javascript
+try {
+  doSomethingThatMightThrow();
+} catch (error) {
+  console.error("Error caught:", error.message);
+} finally {
+  cleanup();
+}
+```
+
+* Appears _deceptively_ logical while reading
+* Serves as a generic mechanism for any errors
+* Widely used across the ecosystem
+* **Hard Question**: What can go wrong in the above code?
+
+: 1. catch wouldn't handle promise rejection
+: 2. cleanup might fail - then what?
+
+## Trigger warning!
+
+> _We believe that coupling exceptions to a control structure, as in the try-catch-finally idiom, results in convoluted code. **It also tends to encourage programmers to label too many ordinary errors, such as failing to open a file, as exceptional.**_
+
+-- from the [Golang FAQ](https://go.dev/doc/faq#exceptions)
+
+## Problems with try/catch
+
+* Easy to forget error handling
+* Easy to get error handling wrong
+* Invisible control flow paths
+* Lack of explicit indication of error behavior
+* Complicates reasoning about code execution paths
+* Creates confusion between errors and exceptions
+
+##
+
+![How smart devs avoid the problem](./static/images/smart-no-throw.jpg)
+
+## Problem: hidden / confusing control flow
+
+The actual path of execution might not be what we expect...
+
+```javascript
+function outer() {
+  try {
+    middle(); // 1
+  } catch (e) {
+    // 4 - Execution jumps here, skipping the rest of middle() and inner()
+  }
+}
+
+function middle() {
+  inner(); // 2
+  console.log("PROBLEM: This won't execute if inner() throws"); // never!
+}
+
+function inner() {
+  doSomethingThatMightThrow(); // 3
+}
+```
+
+* When an exception is thrown, execution jumps to the nearest catch block
+* The call stack "unwinds" - all functions between throw and catch exit
+
+## Problem: Hiding errors
+
+You might never find out an error has actually occrued
+
+```javascript
+function outer() {
+  try {
+    inner();
+  } catch (e) {
+    // PROBLEM: we'll never hit this block
+  }
+}
+
+function inner() {
+  try {
+    doSomethingThatMightThrow()
+  }  catch (e) {
+    // Don't worry, it's fine..
+  }
+}
+```
+
+##
+
+![Great plan, but flawed](./static/images/uncaught-exception.jpg)
+
+## Problem: The single catch block
+
+This coding style is very popular, but is actually problematic
+
+```javascript
+function showDashboard() {
+  try {
+    const profile = getData();
+    const stats = getStats(profile.id);
+    renderDashboard(profile, stats);
+  } catch (e) {
+    // PROBLEM: this block handles too many different errors
+  }
+}
+```
+
+* prevents code from blowing up completely
+* provides only a very crude resolution mechanism
+* no way to continue normal exectution after the error is thrown
+
+## Problem: Multiple catch blocks
+
+We can handle different errors in specific ways,
+but that is still doesn't prevent aforementioned issues
+
+```typescript
+function showDashboard() {
+  try {
+    const profile = getData();
+    const stats = getStats(profile.id);
+    renderDashboard(profile, stats);
+  } catch (e: DataError) {
+    // handle data error
+  } catch (e: StatsError) {
+    // handle stats error
+  } catch (e: RenderError) {
+    // handle render error
+  } catch (e) {
+    // handle any unexpected errors
+  }
+}
+```
+
+## Problem: Handle each error individually
+
+This is _most_ correct, but it looks messy and tedious
+
+```typescript
+let data: Data;
+try {
+  profile = getData();
+catch (e) {
+  data = useDefaultData();
+}
+
+let stats: Stats;
+try {
+  stats = getStats(profile.id);
+} catch (e) {
+  stats = useDefaultStats();
+}
+
+try {
+  renderDashboard(profile, stats);
+} catch (e) {
+  // handle rendering error
+}
+```
+
+## Problem: Unknown failure modes
+
+```javascript
+try {
+  doSomething();
+} catch (error) {
+  // QUESTION: What types of errors are we expecting here?
+}
+```
+
+Even if we handle each error site individually, neither JS nor TS allows us to know what types of errors a function might generate
+
+## Potential solution: Exceptions in type declarations (Java)
+
+```java
+// Method declares it may throw specific exceptions
+public void readFile(String path) throws IOException, FileNotFoundException {
+  // Method implementation
+}
+
+try {
+  readFile("config.txt");
+} catch (FileNotFoundException e) {
+  System.err.println("Config file not found: " + e.getMessage());
+} catch (IOException e) {
+  System.err.println("Error reading config: " + e.getMessage());
+}
+```
+
+This looks ok, but is actually **incomplete** - any function in Java can also throw a `RuntimeException`
+
+##
+
+![Billion dollar mistake](./static/images/billion-dollar-mistake.jpg)
+
+## Promises & rejections
+
+Exceptions are sync; rejections - async.
+
+They have a lot of simularities, but also many differences
+
+```javascript
+fetch('https://api.example.com/data')
+  .then(response => {
+    if (!response.ok) {
+      // here we can either throw or reject - what's the difference?
+      /* (A) */ throw new Error(`HTTP error! Status: ${response.status}`);
+      /* (B) */ return Promise.reject(`HTTP error! Status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => useData(data))
+  .catch(error => console.error("PROBLEM: Same issue as with the single catch block"));
+```
+
+##
+
+![Async error](./static/images/async-error.jpg)
+
+## Promises & exceptions
+
+Additionally there is a another **hidden** problem - `fetch` itself might throw
+
+```javascript
+try {
+  fetch('https://api.example.com/data')
+    .then(parseResponse)
+    .then(validateData)
+    .then(useData)
+    .catch(error => log.error("PROBLEM: only ASYNC errors will be caught here"));
+} catch (e) {
+    // PROBLEM: only handle SYNC errors generated from fetch will be caught here
+}
+```
+
+## Promises: chain ordering
+
+The order of `then`s and `catch`es is very important
+
+```javascript
+fetch('https://api.example.com/data')
+  .then(parseResponse)
+  .catch(error => {
+    log.error("Only handles errors from parseResponse")
+    // if we return, the then chain continues
+    // if we throw / reject - we jump to the next catch
+  })
+  .then(validateData)
+  .then(useData)
+  .catch(error => log.error("Handles errors from either validateData or useData"));
+```
+
+## Promise.all vs Promise.allSettled
+
+```javascript
+// Promise.all - fails fast if ANY promise rejects
+Promise.all([
+  fetch('/api/users'),
+  fetch('/api/products'),
+]).then(([usersRes, productsRes]) => {
+  // ALL succeeded
+}).catch(error => {
+  // ANY one failed
+});
+
+// Promise.allSettled - waits for all promises regardless of outcome
+Promise.allSettled([
+  fetch('/api/users'),
+  fetch('/api/products'),
+]).then(results => {
+  // results is an array of objects with status 'fulfilled' or 'rejected'
+  results.forEach(result => {
+    if (result.status === 'fulfilled') {
+      console.log('Success:', result.value);
+    } else {
+      console.log('Error:', result.reason);
+    }
+  });
+});
+```
+
+## Async/Await in JavaScript
+
+Solves at least one problem - both sync and async errors are handled the same way
+
+```javascript
+async function fetchUserData(userId) {
+  try {
+    const response = await fetch(`/api/users/${userId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    const userData = await response.json();
+    return userData;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+  }
+}
+
+fetchUserData(123)
+  .catch(error => console.error("All errors get converted to rejections in async functions"))
+```
+
+## Errors as values
+
+* Treating errors as regular return values
+* Explicit error checking
+* No special control flow mechanisms
+
+## Node.js Callbacks Pattern
+
+Who remembers good old callback hell? 
+
+```javascript
+// Traditional Node.js error-first callback pattern
+fs.readFile('file.txt', (err, data) => {
+  if (err) {
+    console.error('Error reading file:', err);
+    return;
+  }
+
+  anotherAsyncFunc(data, (err, result) => {
+    if (err) {
+      console.error("Error processing data", err);
+      return;
+    }
+
+    // and so on
+  })
+});
+```
+
+## Go's Error Handling
+
+```go
+// Go returns errors as values
+func LoadJsonConfig(path string) (*Config, error) {
+    data, err := ioutil.ReadFile(path)
+    if err != nil {
+        return nil, fmt.Errorf("reading config: %w", err)
+    }
+
+    var cfg Config
+    err = json.Unmarshal(dat, &cfg)
+    if err != nil {
+      return nil, fmt.Errorf("parsing config: %w", err)
+    }
+
+    return &cfg, nil
+}
+
+// Caller must check errors explicitly
+data, err := LoadJsonConfig("config.json")
+if err != nil {
+    // we still need to explicitly distinguish each failure mode
+    log.Fatalf("Failed to load config: %v", err)
+}
+```
+
+##
+
+![Errors as values](./static/images/errors-as-values.jpg)
+
+## Zig's Error Handling
+
+Zig implements some nice syntax sugar on top of go's model
+
+```zig
+fn readValue() !u32 {
+    const file = try std.fs.cwd().openFile("data.txt", .{});
+    defer file.close();
+
+    var buffer: [10]u8 = undefined;
+    const size = try file.read(&buffer);
+
+    return std.fmt.parseUnsigned(u32, buffer[0..size], 10);
+}
+
+fn main() !void {
+    const value = readValue() catch |err| {
+        std.debug.print("Error: {}\n", .{err});
+        return;
+    };
+    std.debug.print("Value: {}\n", .{value});
+}
+```
+
+## The Maybe Monad
+
+* **Result**: Represents a computation that might fail
+* **Maybe**: Encapsulates the presence or absence of a value
+* Common in functional programming languages
+* Promises are another example of a monad
+
+## Rust's Result and Option Types
+
+```rust
+fn read_config_file(path: &str) -> Result<Config, io::Error> {
+    let file = File::open(path)?; // ? operator propagates errors
+    let config: Config = serde_json::from_reader(file)?;
+    Ok(config)
+}
+
+fn find_user(id: UserId) -> Option<User> {
+    if id.is_valid() {
+        Some(User::new(id))
+    } else {
+        None
+    }
+}
+
+match read_config_file("config.json") {
+    Ok(config) => println!("Config loaded: {}", config.name),
+    Err(e) => eprintln!("Failed to load config: {}", e),
+}
+```
+
+## OCaml's Error Handling
+
+```ocaml
+(* Using Result type *)
+let read_file filename =
+  try
+    let channel = open_in filename in
+    let content = really_input_string channel (in_channel_length channel) in
+    close_in channel;
+    Ok content
+  with
+  | Sys_error msg -> Error ("System error: " ^ msg)
+  | _ -> Error "Unknown error while reading file"
+
+(* Pattern matching on result *)
+match read_file "data.txt" with
+| Ok content -> Printf.printf "File content: %s\n" content
+| Error msg -> Printf.eprintf "Error: %s\n" msg
+```
+
+## Algebraic Effects
+
+* Exceptions are a specific type of algebraic effects
+* Allow defining and handling computational effects
+* Allow handling operations in a decoupled way
+* Enable resuming the control flow
+
+## Algebraic Effects: Example
+
+_Note: This is psudo code!_
+
+```javascript
+function getData() {
+  // NOTE: this is NOT JavaScript
+  perform log.Info("Logging can be handled as an effect")
+
+  // internally get might perform a throw RequestError
+  const data = perform http.Get("http://some.url/")
+
+  return data
+}
+
+do {
+  const data = getData();
+} handle http.Get {
+  // actual implementation of the get effect
+  resume with data; // Continue execution with the returned value
+} handle log.Info {
+  // actual implementation of logging
+} handle RequestError {
+  // as with throw catch, the first handle block up the stack "catches" the operation
+}
+```
+
+##
+
+![Algebraic defects](./static/images/algebraic-defects.jpg)
+
+## Error Handling in HTTP Request Handlers
+
+```javascript
+// Express.js with middleware for error handling
+app.get('/api/users/:id', async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const user = await database.findUser(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    // Pass to error-handling middleware
+    next(error);
+  }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('API Error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+```
+
+## Cascading Errors Across Service Boundaries
+
+**TODO:** Fix this slide!
+
+```javascript
+async function getUserProfile(userId) {
+  try {
+    // Call user service
+    const user = await userService.getUser(userId);
+    
+    // Call billing service
+    const billing = await billingService.getBillingInfo(userId);
+    
+    // Call preferences service
+    const preferences = await preferencesService.getPreferences(userId);
+    
+    return { user, billing, preferences };
+  } catch (error) {
+    if (error.service === 'billing') {
+      // Handle billing service failure gracefully
+      return { user, preferences, billing: { status: 'unavailable' } };
+    }
+    throw error; // Re-throw other errors
+  }
+}
+```
+
+##
+
+![There was an error far away from here](./static/images/far-away-error.jpg)
+
+## Circuit Breaker Pattern
+
+```javascript
+const breaker = new CircuitBreaker({
+  service: 'payments-api',
+  failureThreshold: 5,
+  resetTimeout: 30000
+});
+
+async function processPayment(order) {
+  try {
+    return await breaker.execute(() => paymentsApi.process(order));
+  } catch (error) {
+    if (error.type === 'CIRCUIT_OPEN') {
+      return await fallbackPaymentProcess(order);
+    }
+    throw error;
+  }
+}
+```
+
+* Prevents cascading failures
+* Monitors for failures in external service calls
+* Automatically opens circuit when failure threshold reached
+
+## Encapsulating Behavior in Error Objects
+
+```javascript
+class QueryError extends Error {
+  constructor(message, query) {
+    super(message);
+    this.type = 'DatabaseError';
+    this.query = query;
+  }
+  
+  report() {
+    console.error(`Query Error: ${this.query}`); 
+    monitoring.captureException(this);
+  }
+  
+  alert() {
+    if (this.code >= 500) {
+      alerting.sendAlert({
+        level: 'critical',
+        service: 'database',
+        details: this
+      });
+    }
+  }
+}
+
+## Encapsulating Behavior in Error Objects: Usage
+
+Moves the knowledge of how an error should be handled inside the error itself.
+
+```javascript
+try {
+  db.select(`SELECT ...`)
+} catch (error) {
+  if (error instanceof QueryError) {
+    error.report();
+    error.alert();
+  }
+}
+```
+
+## Advice for better error handling
+
+* Think about all possible failure modes
+* Allow your system to recover gracefully
+* Log as much relevant context as possible
+* Setup monitoring & alerting on critical paths
+* **Not all problems are errors**
+
+_None the strategies we've looked at here take into account purely logical errors!_
+
+```javascript
+"1" + 1 == 2 // false
+```
+
+* Use assertions in sensitive and critical paths to ensure correctness
+
+## Conclusion
+
+* throw/catch is unavoidable in JavaScript
+  * too entrenched in the language already
+  * libraries use it, so fighting against it is an uphill battle
+* There is no elegant, unobtrusive, magic solution to error handling
+  * Different error handling approaches suit different scenarios
+* Consider:
+  * Developer experience
+  * Performance requirements
+  * Language idioms
+  * System boundaries
+  * Failure modes

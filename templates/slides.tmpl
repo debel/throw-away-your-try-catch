@@ -19,7 +19,8 @@
     <script src='/static/notes.js'></script>
     {{end}}
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/tokyo-night-dark.min.css">
   </head>
 
   <body style='display: none'>
@@ -28,8 +29,7 @@
 
       <article>
         <h1>{{.Title}}</h1>
-        {{with .Subtitle}}<h3>{{.}}</h3>{{end}}
-        {{if not .Time.IsZero}}<h3>{{.Time.Format "2 January 2006"}}</h3>{{end}}
+        {{with .Subtitle}}<h3 id="subtitle">{{.}}</h3>{{end}}
         {{range .Authors}}
           <div class="presenter">
             {{range .TextElem}}{{elem $.Template .}}{{end}}
@@ -51,8 +51,8 @@
   <!-- end of slide {{$s.Number}} -->
   {{end}}{{/* of Slide block */}}
 
-      <article>
-        <h3>Thank you</h3>
+      <article class="thanks">
+        <h1>Thank you!</h1>
         {{range .Authors}}
           <div class="presenter">
             {{range .Elem}}{{elem $.Template .}}{{end}}
@@ -72,11 +72,11 @@
     <script src='/play.js'></script>
     {{end}}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 
-    <!-- and it's easy to individually load additional languages -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
-
+    <script src="../static/highlight-zig.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/go.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/languages/ocaml.min.js"></script>
     <script>hljs.highlightAll();</script>
   </body>
 </html>
