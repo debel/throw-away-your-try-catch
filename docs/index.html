@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<!-- saved from url=(0035)http://localhost:3999/error.slide#1 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Throw away your try/catch</title>
+    
+    <script>
+      var notesEnabled =  false ;
+    </script>
+    <script src="./Throw away your try_catch_files/slides.js.download"></script>
+
+    
+
+    <link href="./Throw away your try_catch_files/css2" rel="stylesheet">
+    <link rel="stylesheet" href="./Throw away your try_catch_files/tokyo-night-dark.min.css">
+  <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1"><meta name="apple-mobile-web-app-capable" content="yes"></head>
+
+  <body style="display: none" class="loaded">
+
+    <section class="slides layout-widescreen">
+
+      <article class="current">
+        <h1>Throw away your try/catch</h1>
+        <h3 id="subtitle">An exploration of error handling strategies</h3>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Mihail Mikov
+  </p>
+  
+
+  
+  <p>
+    Staff Enginner, SumUp
+  </p>
+  
+
+  
+  <p>
+    18.03.2025
+  </p>
+  
+
+          </div>
+        
+      </article>
+
+  
+  
+      <article class="next">
+      
+        <h3>Overview</h3>
+        <p>Error handling is a question of <strong>reliability</strong>. Let's assume 2 main types of approaches:</p>
+<ul>
+<li><strong>Correctness</strong> - ensuring that a system behaves according to its specification. Focuses on preventing errors</li>
+<li><strong>Recovery</strong> - handling errors when they do occur, acknowledging that no system is perfect. Focuses on resilience</li>
+</ul>
+<p><em>This presentation focuses on the latter</em></p>
+
+      
+      <span class="pagenumber">2</span>
+      </article>
+  
+  
+  
+      <article class="far-next">
+      
+        <h3>Many types of safety</h3>
+        <p>There are many types of safety in computer science.</p>
+<ul>
+<li>Testing</li>
+<li>Type safety</li>
+<li>Memory safety</li>
+<li>Error correction</li>
+<li>System invariants</li>
+<li>Redundnecy</li>
+<li>Contract-based programming (e.g. Eiffel)</li>
+<li>Pure functions; avoiding side-effects (e.g. Haskell)</li>
+<li>Process supervisors (e.g. Erlang)</li>
+</ul>
+
+      
+      <span class="pagenumber">3</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/fix-some-bugs.jpg" alt="Let&#39;s fix some bugs!"></p>
+
+      
+      <span class="pagenumber">4</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Throw/Catch in JavaScript</h3>
+        <p>A try/catch block is the main mechanism for handling exceptions in JavaScript</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">try</span> {
+  <span class="hljs-title function_">doSomethingThatMightThrow</span>();
+} <span class="hljs-keyword">catch</span> (error) {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">"Error caught:"</span>, error.<span class="hljs-property">message</span>);
+} <span class="hljs-keyword">finally</span> {
+  <span class="hljs-title function_">cleanup</span>();
+}
+</code></pre>
+<ul>
+<li>Appears <em>deceptively</em> logical while reading</li>
+<li>Serves as a generic mechanism for any errors</li>
+<li>Widely used across the ecosystem</li>
+<li><strong>Hard Question</strong>: What can go wrong in the above code?</li>
+</ul>
+
+      
+      <span class="pagenumber">5</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Trigger warning!</h3>
+        <blockquote>
+<p><em>We believe that coupling exceptions to a control structure, as in the try-catch-finally idiom, results in convoluted code. <strong>It also tends to encourage programmers to label too many ordinary errors, such as failing to open a file, as exceptional.</strong></em></p>
+</blockquote>
+<p>-- from the <a href="https://go.dev/doc/faq#exceptions" target="_blank" rel="noopener">Golang FAQ</a></p>
+
+      
+      <span class="pagenumber">6</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Problems with try/catch</h3>
+        <ul>
+<li>Easy to forget error handling</li>
+<li>Easy to get error handling wrong</li>
+<li>Invisible control flow paths</li>
+<li>Lack of explicit indication of error behavior</li>
+<li>Complicates reasoning about code execution paths</li>
+<li>Creates confusion between errors and exceptions</li>
+</ul>
+
+      
+      <span class="pagenumber">7</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/smart-no-throw.jpg" alt="How smart devs avoid the problem"></p>
+
+      
+      <span class="pagenumber">8</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Problem: hidden / confusing control flow</h3>
+        <p>The actual path of execution might not be what we expect...</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">function</span> <span class="hljs-title function_">outer</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-title function_">middle</span>(); <span class="hljs-comment">// 1</span>
+  } <span class="hljs-keyword">catch</span> (e) {
+    <span class="hljs-comment">// 4 - Execution jumps here, skipping the rest of middle() and inner()</span>
+  }
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">middle</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-title function_">inner</span>(); <span class="hljs-comment">// 2</span>
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">"PROBLEM: This won't execute if inner() throws"</span>); <span class="hljs-comment">// never!</span>
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">inner</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-title function_">doSomethingThatMightThrow</span>(); <span class="hljs-comment">// 3</span>
+}
+</code></pre>
+<ul>
+<li>When an exception is thrown, execution jumps to the nearest catch block</li>
+<li>The call stack "unwinds" - all functions between throw and catch exit</li>
+</ul>
+
+      
+      <span class="pagenumber">9</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Problem: Hiding errors</h3>
+        <p>You might never find out an error has actually occrued</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">function</span> <span class="hljs-title function_">outer</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-title function_">inner</span>();
+  } <span class="hljs-keyword">catch</span> (e) {
+    <span class="hljs-comment">// PROBLEM: we'll never hit this block</span>
+  }
+}
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">inner</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-title function_">doSomethingThatMightThrow</span>()
+  }  <span class="hljs-keyword">catch</span> (e) {
+    <span class="hljs-comment">// Don't worry, it's fine..</span>
+  }
+}
+</code></pre>
+
+      
+      <span class="pagenumber">10</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/uncaught-exception.jpg" alt="Great plan, but flawed"></p>
+
+      
+      <span class="pagenumber">11</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Problem: The single catch block</h3>
+        <p>This coding style is very popular, but is actually problematic</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">function</span> <span class="hljs-title function_">showDashboard</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">const</span> profile = <span class="hljs-title function_">getData</span>();
+    <span class="hljs-keyword">const</span> stats = <span class="hljs-title function_">getStats</span>(profile.<span class="hljs-property">id</span>);
+    <span class="hljs-title function_">renderDashboard</span>(profile, stats);
+  } <span class="hljs-keyword">catch</span> (e) {
+    <span class="hljs-comment">// PROBLEM: this block handles too many different errors</span>
+  }
+}
+</code></pre>
+<ul>
+<li>prevents code from blowing up completely</li>
+<li>provides only a very crude resolution mechanism</li>
+<li>no way to continue normal exectution after the error is thrown</li>
+</ul>
+
+      
+      <span class="pagenumber">12</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Problem: Multiple catch blocks</h3>
+        <p>We can handle different errors in specific ways,
+but that is still doesn't prevent aforementioned issues</p>
+<pre><code class="language-typescript hljs" data-highlighted="yes"><span class="hljs-keyword">function</span> <span class="hljs-title function_">showDashboard</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">const</span> profile = <span class="hljs-title function_">getData</span>();
+    <span class="hljs-keyword">const</span> stats = <span class="hljs-title function_">getStats</span>(profile.<span class="hljs-property">id</span>);
+    <span class="hljs-title function_">renderDashboard</span>(profile, stats);
+  } <span class="hljs-keyword">catch</span> (<span class="hljs-attr">e</span>: <span class="hljs-title class_">DataError</span>) {
+    <span class="hljs-comment">// handle data error</span>
+  } <span class="hljs-keyword">catch</span> (<span class="hljs-attr">e</span>: <span class="hljs-title class_">StatsError</span>) {
+    <span class="hljs-comment">// handle stats error</span>
+  } <span class="hljs-keyword">catch</span> (<span class="hljs-attr">e</span>: <span class="hljs-title class_">RenderError</span>) {
+    <span class="hljs-comment">// handle render error</span>
+  } <span class="hljs-keyword">catch</span> (e) {
+    <span class="hljs-comment">// handle any unexpected errors</span>
+  }
+}
+</code></pre>
+
+      
+      <span class="pagenumber">13</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Problem: Handle each error individually</h3>
+        <p>This is <em>most</em> correct, but it looks messy and tedious</p>
+<pre><code class="language-typescript hljs" data-highlighted="yes"><span class="hljs-keyword">let</span> <span class="hljs-attr">data</span>: <span class="hljs-title class_">Data</span>;
+<span class="hljs-keyword">try</span> {
+  profile = <span class="hljs-title function_">getData</span>();
+<span class="hljs-keyword">catch</span> (e) {
+  data = <span class="hljs-title function_">useDefaultData</span>();
+}
+
+<span class="hljs-keyword">let</span> <span class="hljs-attr">stats</span>: <span class="hljs-title class_">Stats</span>;
+<span class="hljs-keyword">try</span> {
+  stats = <span class="hljs-title function_">getStats</span>(profile.<span class="hljs-property">id</span>);
+} <span class="hljs-keyword">catch</span> (e) {
+  stats = <span class="hljs-title function_">useDefaultStats</span>();
+}
+
+<span class="hljs-keyword">try</span> {
+  <span class="hljs-title function_">renderDashboard</span>(profile, stats);
+} <span class="hljs-keyword">catch</span> (e) {
+  <span class="hljs-comment">// handle rendering error</span>
+}
+</code></pre>
+
+      
+      <span class="pagenumber">14</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Problem: Unknown failure modes</h3>
+        <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">try</span> {
+  <span class="hljs-title function_">doSomething</span>();
+} <span class="hljs-keyword">catch</span> (error) {
+  <span class="hljs-comment">// QUESTION: What types of errors are we expecting here?</span>
+}
+</code></pre>
+<p>Even if we handle each error site individually, neither JS nor TS allows us to know what types of errors a function might generate</p>
+
+      
+      <span class="pagenumber">15</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Potential solution: Exceptions in type declarations (Java)</h3>
+        <pre><code class="language-java hljs" data-highlighted="yes"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">readFile</span><span class="hljs-params">(String path)</span> <span class="hljs-keyword">throws</span> IOException, FileNotFoundException {
+  <span class="hljs-comment">// Method implementation</span>
+}
+
+<span class="hljs-keyword">try</span> {
+  readFile(<span class="hljs-string">"config.txt"</span>);
+} <span class="hljs-keyword">catch</span> (FileNotFoundException e) {
+  System.err.println(<span class="hljs-string">"Config file not found: "</span> + e.getMessage());
+} <span class="hljs-keyword">catch</span> (IOException e) {
+  System.err.println(<span class="hljs-string">"Error reading config: "</span> + e.getMessage());
+}
+</code></pre>
+<p>This looks ok, but is actually <strong>incomplete</strong> - any function in Java can also throw a <code>RuntimeException</code></p>
+
+      
+      <span class="pagenumber">16</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/billion-dollar-mistake.jpg" alt="Billion dollar mistake"></p>
+
+      
+      <span class="pagenumber">17</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Promises &amp; rejections</h3>
+        <p>Exceptions are sync; rejections - async.</p>
+<p>They have a lot of simularities, but also many differences</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-title function_">fetch</span>(<span class="hljs-string">'https://api.example.com/data'</span>)
+  .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">response</span> =&gt;</span> {
+    <span class="hljs-keyword">if</span> (!response.<span class="hljs-property">ok</span>) {
+      <span class="hljs-comment">// here we can either throw or reject - what's the difference?</span>
+      <span class="hljs-comment">/* (A) */</span> <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">`HTTP error! Status: <span class="hljs-subst">${response.status}</span>`</span>);
+      <span class="hljs-comment">/* (B) */</span> <span class="hljs-keyword">return</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">reject</span>(<span class="hljs-string">`HTTP error! Status: <span class="hljs-subst">${response.status}</span>`</span>);
+    }
+    <span class="hljs-keyword">return</span> response.<span class="hljs-title function_">json</span>();
+  })
+  .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">data</span> =&gt;</span> <span class="hljs-title function_">useData</span>(data))
+  .<span class="hljs-title function_">catch</span>(<span class="hljs-function"><span class="hljs-params">error</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">"PROBLEM: Same issue as with the single catch block"</span>));
+</code></pre>
+
+      
+      <span class="pagenumber">18</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/async-error.jpg" alt="Async error"></p>
+
+      
+      <span class="pagenumber">19</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Promises &amp; exceptions</h3>
+        <p>Additionally there is a another <strong>hidden</strong> problem - <code>fetch</code> itself might throw</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">try</span> {
+  <span class="hljs-title function_">fetch</span>(<span class="hljs-string">'https://api.example.com/data'</span>)
+    .<span class="hljs-title function_">then</span>(parseResponse)
+    .<span class="hljs-title function_">then</span>(validateData)
+    .<span class="hljs-title function_">then</span>(useData)
+    .<span class="hljs-title function_">catch</span>(<span class="hljs-function"><span class="hljs-params">error</span> =&gt;</span> log.<span class="hljs-title function_">error</span>(<span class="hljs-string">"PROBLEM: only ASYNC errors will be caught here"</span>));
+} <span class="hljs-keyword">catch</span> (e) {
+    <span class="hljs-comment">// PROBLEM: only handle SYNC errors generated from fetch will be caught here</span>
+}
+</code></pre>
+
+      
+      <span class="pagenumber">20</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Promises: chain ordering</h3>
+        <p>The order of <code>then</code>s and <code>catch</code>es is very important</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-title function_">fetch</span>(<span class="hljs-string">'https://api.example.com/data'</span>)
+  .<span class="hljs-title function_">then</span>(parseResponse)
+  .<span class="hljs-title function_">catch</span>(<span class="hljs-function"><span class="hljs-params">error</span> =&gt;</span> {
+    log.<span class="hljs-title function_">error</span>(<span class="hljs-string">"Only handles errors from parseResponse"</span>)
+    <span class="hljs-comment">// if we return, the then chain continues</span>
+    <span class="hljs-comment">// if we throw / reject - we jump to the next catch</span>
+  })
+  .<span class="hljs-title function_">then</span>(validateData)
+  .<span class="hljs-title function_">then</span>(useData)
+  .<span class="hljs-title function_">catch</span>(<span class="hljs-function"><span class="hljs-params">error</span> =&gt;</span> log.<span class="hljs-title function_">error</span>(<span class="hljs-string">"Handles errors from either validateData or useData"</span>));
+</code></pre>
+
+      
+      <span class="pagenumber">21</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Promise.all vs Promise.allSettled</h3>
+        <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>([
+  <span class="hljs-title function_">fetch</span>(<span class="hljs-string">'/api/users'</span>),
+  <span class="hljs-title function_">fetch</span>(<span class="hljs-string">'/api/products'</span>),
+]).<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">[usersRes, productsRes]</span>) =&gt;</span> {
+  <span class="hljs-comment">// ALL succeeded</span>
+}).<span class="hljs-title function_">catch</span>(<span class="hljs-function"><span class="hljs-params">error</span> =&gt;</span> {
+  <span class="hljs-comment">// ANY one failed</span>
+});
+
+<span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">allSettled</span>([
+  <span class="hljs-title function_">fetch</span>(<span class="hljs-string">'/api/users'</span>),
+  <span class="hljs-title function_">fetch</span>(<span class="hljs-string">'/api/products'</span>),
+]).<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">results</span> =&gt;</span> {
+  <span class="hljs-comment">// results is an array of objects with status 'fulfilled' or 'rejected'</span>
+  results.<span class="hljs-title function_">forEach</span>(<span class="hljs-function"><span class="hljs-params">result</span> =&gt;</span> {
+    <span class="hljs-keyword">if</span> (result.<span class="hljs-property">status</span> === <span class="hljs-string">'fulfilled'</span>) {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Success:'</span>, result.<span class="hljs-property">value</span>);
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">'Error:'</span>, result.<span class="hljs-property">reason</span>);
+    }
+  });
+});
+</code></pre>
+
+      
+      <span class="pagenumber">22</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Async/Await in JavaScript</h3>
+        <p>Solves at least one problem - both sync and async errors are handled the same way</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">fetchUserData</span>(<span class="hljs-params">userId</span>) {
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`/api/users/<span class="hljs-subst">${userId}</span>`</span>);
+    <span class="hljs-keyword">if</span> (!response.<span class="hljs-property">ok</span>) {
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">`HTTP error! Status: <span class="hljs-subst">${response.status}</span>`</span>);
+    }
+    <span class="hljs-keyword">const</span> userData = <span class="hljs-keyword">await</span> response.<span class="hljs-title function_">json</span>();
+    <span class="hljs-keyword">return</span> userData;
+  } <span class="hljs-keyword">catch</span> (error) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Error fetching user data:'</span>, error);
+  }
+}
+
+<span class="hljs-title function_">fetchUserData</span>(<span class="hljs-number">123</span>)
+  .<span class="hljs-title function_">catch</span>(<span class="hljs-function"><span class="hljs-params">error</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">"All errors get converted to rejections in async functions"</span>))
+</code></pre>
+
+      
+      <span class="pagenumber">23</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Errors as values</h3>
+        <ul>
+<li>Treating errors as regular return values</li>
+<li>Explicit error checking</li>
+<li>No special control flow mechanisms</li>
+</ul>
+
+      
+      <span class="pagenumber">24</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Node.js Callbacks Pattern</h3>
+        <p>Who remembers good old callback hell?</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes">fs.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">'file.txt'</span>, <span class="hljs-function">(<span class="hljs-params">err, data</span>) =&gt;</span> {
+  <span class="hljs-keyword">if</span> (err) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Error reading file:'</span>, err);
+    <span class="hljs-keyword">return</span>;
+  }
+
+  <span class="hljs-title function_">anotherAsyncFunc</span>(data, <span class="hljs-function">(<span class="hljs-params">err, result</span>) =&gt;</span> {
+    <span class="hljs-keyword">if</span> (err) {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">"Error processing data"</span>, err);
+      <span class="hljs-keyword">return</span>;
+    }
+
+    <span class="hljs-comment">// and so on</span>
+  })
+});
+</code></pre>
+
+      
+      <span class="pagenumber">25</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Go's Error Handling</h3>
+        <pre><code class="language-go hljs" data-highlighted="yes"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">LoadJsonConfig</span><span class="hljs-params">(path <span class="hljs-type">string</span>)</span></span> (*Config, <span class="hljs-type">error</span>) {
+    data, err := ioutil.ReadFile(path)
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, fmt.Errorf(<span class="hljs-string">"reading config: %w"</span>, err)
+    }
+
+    <span class="hljs-keyword">var</span> cfg Config
+    err = json.Unmarshal(dat, &amp;cfg)
+    <span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+      <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>, fmt.Errorf(<span class="hljs-string">"parsing config: %w"</span>, err)
+    }
+
+    <span class="hljs-keyword">return</span> &amp;cfg, <span class="hljs-literal">nil</span>
+}
+
+data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
+<span class="hljs-keyword">if</span> err != <span class="hljs-literal">nil</span> {
+    <span class="hljs-comment">// we still need to explicitly distinguish each failure mode</span>
+    log.Fatalf(<span class="hljs-string">"Failed to load config: %v"</span>, err)
+}
+</code></pre>
+
+      
+      <span class="pagenumber">26</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/errors-as-values.jpg" alt="Errors as values"></p>
+
+      
+      <span class="pagenumber">27</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Zig's Error Handling</h3>
+        <p>Zig implements some nice syntax sugar on top of go's model</p>
+<pre><code class="language-zig hljs" data-highlighted="yes"><span class="hljs-keyword">fn</span><span class="hljs-function"> readValue</span>() <span class="hljs-operator">!</span><span class="hljs-type">u32</span> {
+    <span class="hljs-keyword">const</span> file = <span class="hljs-keyword">try</span> std.fs.cwd().openFile(<span class="hljs-string">"data.txt"</span>, .{});
+    <span class="hljs-keyword">defer</span> file.close();
+
+    <span class="hljs-keyword">var</span> buffer: [<span class="hljs-numbers">10</span>]<span class="hljs-type">u8</span> = <span class="hljs-literal">undefined</span>;
+    <span class="hljs-keyword">const</span> size = <span class="hljs-keyword">try</span> file.read(<span class="hljs-operator">&amp;</span>buffer);
+
+    <span class="hljs-keyword">return</span> std.fmt.parseUnsigned(<span class="hljs-type">u32</span>, buffer[<span class="hljs-numbers">0</span>..size], <span class="hljs-numbers">10</span>);
+}
+
+<span class="hljs-keyword">fn</span><span class="hljs-function"> main</span>() <span class="hljs-operator">!</span><span class="hljs-type">void</span> {
+    <span class="hljs-keyword">const</span> value = readValue() <span class="hljs-keyword">catch</span> <span class="hljs-operator">|</span>err<span class="hljs-operator">|</span> {
+        std.debug.print(<span class="hljs-string">"Error: {}<span class="hljs-string">\n</span>"</span>, .{err});
+        <span class="hljs-keyword">return</span>;
+    };
+    std.debug.print(<span class="hljs-string">"Value: {}<span class="hljs-string">\n</span>"</span>, .{value});
+}
+</code></pre>
+
+      
+      <span class="pagenumber">28</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>The Maybe Monad</h3>
+        <ul>
+<li><strong>Result</strong>: Represents a computation that might fail</li>
+<li><strong>Maybe</strong>: Encapsulates the presence or absence of a value</li>
+<li>Common in functional programming languages</li>
+<li>Promises are another example of a monad</li>
+</ul>
+
+      
+      <span class="pagenumber">29</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Rust's Result and Option Types</h3>
+        <pre><code class="language-rust hljs" data-highlighted="yes"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">read_config_file</span>(path: &amp;<span class="hljs-type">str</span>) <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">Result</span>&lt;Config, io::Error&gt; {
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">file</span> = File::<span class="hljs-title function_ invoke__">open</span>(path)?; <span class="hljs-comment">// ? operator propagates errors</span>
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">config</span>: Config = serde_json::<span class="hljs-title function_ invoke__">from_reader</span>(file)?;
+    <span class="hljs-title function_ invoke__">Ok</span>(config)
+}
+
+<span class="hljs-keyword">fn</span> <span class="hljs-title function_">find_user</span>(id: UserId) <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">Option</span>&lt;User&gt; {
+    <span class="hljs-keyword">if</span> id.<span class="hljs-title function_ invoke__">is_valid</span>() {
+        <span class="hljs-title function_ invoke__">Some</span>(User::<span class="hljs-title function_ invoke__">new</span>(id))
+    } <span class="hljs-keyword">else</span> {
+        <span class="hljs-literal">None</span>
+    }
+}
+
+<span class="hljs-keyword">match</span> <span class="hljs-title function_ invoke__">read_config_file</span>(<span class="hljs-string">"config.json"</span>) {
+    <span class="hljs-title function_ invoke__">Ok</span>(config) =&gt; <span class="hljs-built_in">println!</span>(<span class="hljs-string">"Config loaded: {}"</span>, config.name),
+    <span class="hljs-title function_ invoke__">Err</span>(e) =&gt; <span class="hljs-built_in">eprintln!</span>(<span class="hljs-string">"Failed to load config: {}"</span>, e),
+}
+</code></pre>
+
+      
+      <span class="pagenumber">30</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>OCaml's Error Handling</h3>
+        <pre><code class="language-ocaml hljs" data-highlighted="yes"><span class="hljs-comment">(* Using Result type *)</span>
+<span class="hljs-keyword">let</span> read_file filename =
+  <span class="hljs-keyword">try</span>
+    <span class="hljs-keyword">let</span> channel = open_in filename <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> content = really_input_string channel (in_channel_length channel) <span class="hljs-keyword">in</span>
+    close_in channel;
+    <span class="hljs-type">Ok</span> content
+  <span class="hljs-keyword">with</span>
+  | <span class="hljs-type">Sys_error</span> msg -&gt; <span class="hljs-type">Error</span> (<span class="hljs-string">"System error: "</span> ^ msg)
+  | _ -&gt; <span class="hljs-type">Error</span> <span class="hljs-string">"Unknown error while reading file"</span>
+
+<span class="hljs-comment">(* Pattern matching on result *)</span>
+<span class="hljs-keyword">match</span> read_file <span class="hljs-string">"data.txt"</span> <span class="hljs-keyword">with</span>
+| <span class="hljs-type">Ok</span> content -&gt; <span class="hljs-type">Printf</span>.printf <span class="hljs-string">"File content: %s\n"</span> content
+| <span class="hljs-type">Error</span> msg -&gt; <span class="hljs-type">Printf</span>.eprintf <span class="hljs-string">"Error: %s\n"</span> msg
+</code></pre>
+
+      
+      <span class="pagenumber">31</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Algebraic Effects</h3>
+        <ul>
+<li>Exceptions are a specific type of algebraic effects</li>
+<li>Allow defining and handling computational effects</li>
+<li>Allow handling operations in a decoupled way</li>
+<li>Enable resuming the control flow</li>
+</ul>
+
+      
+      <span class="pagenumber">32</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Algebraic Effects: Example</h3>
+        <p><em>Note: This is psudo code!</em></p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">function</span> <span class="hljs-title function_">getData</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> this is NOT JavaScript</span>
+  perform log.<span class="hljs-title class_">Info</span>(<span class="hljs-string">"Logging can be handled as an effect"</span>)
+
+  <span class="hljs-comment">// internally get might perform a throw RequestError</span>
+  <span class="hljs-keyword">const</span> data = perform http.<span class="hljs-title class_">Get</span>(<span class="hljs-string">"http://some.url/"</span>)
+
+  <span class="hljs-keyword">return</span> data
+}
+
+<span class="hljs-keyword">do</span> {
+  <span class="hljs-keyword">const</span> data = <span class="hljs-title function_">getData</span>();
+} handle http.<span class="hljs-property">Get</span> {
+  <span class="hljs-comment">// actual implementation of the get effect</span>
+  resume <span class="hljs-keyword">with</span> data; <span class="hljs-comment">// Continue execution with the returned value</span>
+} handle log.<span class="hljs-property">Info</span> {
+  <span class="hljs-comment">// actual implementation of logging</span>
+} handle <span class="hljs-title class_">RequestError</span> {
+  <span class="hljs-comment">// as with throw catch, the first handle block up the stack "catches" the operation</span>
+}
+</code></pre>
+
+      
+      <span class="pagenumber">33</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/algebraic-defects.jpg" alt="Algebraic defects"></p>
+
+      
+      <span class="pagenumber">34</span>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Error Handling in HTTP Request Handlers</h3>
+        <pre><code class="language-javascript hljs" data-highlighted="yes">app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/api/users/:id'</span>, <span class="hljs-title function_">async</span> (req, res, next) =&gt; {
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">const</span> userId = req.<span class="hljs-property">params</span>.<span class="hljs-property">id</span>;
+    <span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> database.<span class="hljs-title function_">findUser</span>(userId);
+    
+    <span class="hljs-keyword">if</span> (!user) {
+      <span class="hljs-keyword">return</span> res.<span class="hljs-title function_">status</span>(<span class="hljs-number">404</span>).<span class="hljs-title function_">json</span>({ <span class="hljs-attr">error</span>: <span class="hljs-string">'User not found'</span> });
+    }
+    
+    res.<span class="hljs-title function_">json</span>(user);
+  } <span class="hljs-keyword">catch</span> (error) {
+    <span class="hljs-comment">// Pass to error-handling middleware</span>
+    <span class="hljs-title function_">next</span>(error);
+  }
+});
+
+app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<span class="hljs-params">err, req, res, next</span>) =&gt;</span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">'API Error:'</span>, err);
+  res.<span class="hljs-title function_">status</span>(<span class="hljs-number">500</span>).<span class="hljs-title function_">json</span>({ <span class="hljs-attr">error</span>: <span class="hljs-string">'Internal server error'</span> });
+});
+</code></pre>
+
+      
+      <span class="pagenumber">35</span>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Cascading Errors Across Service Boundaries</h3>
+        <p><strong>TODO:</strong> Fix this slide!</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getUserProfile</span>(<span class="hljs-params">userId</span>) {
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-comment">// Call user service</span>
+    <span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> userService.<span class="hljs-title function_">getUser</span>(userId);
+    
+    <span class="hljs-comment">// Call billing service</span>
+    <span class="hljs-keyword">const</span> billing = <span class="hljs-keyword">await</span> billingService.<span class="hljs-title function_">getBillingInfo</span>(userId);
+    
+    <span class="hljs-comment">// Call preferences service</span>
+    <span class="hljs-keyword">const</span> preferences = <span class="hljs-keyword">await</span> preferencesService.<span class="hljs-title function_">getPreferences</span>(userId);
+    
+    <span class="hljs-keyword">return</span> { user, billing, preferences };
+  } <span class="hljs-keyword">catch</span> (error) {
+    <span class="hljs-keyword">if</span> (error.<span class="hljs-property">service</span> === <span class="hljs-string">'billing'</span>) {
+      <span class="hljs-comment">// Handle billing service failure gracefully</span>
+      <span class="hljs-keyword">return</span> { user, preferences, <span class="hljs-attr">billing</span>: { <span class="hljs-attr">status</span>: <span class="hljs-string">'unavailable'</span> } };
+    }
+    <span class="hljs-keyword">throw</span> error; <span class="hljs-comment">// Re-throw other errors</span>
+  }
+}
+</code></pre>
+
+      
+      <span class="pagenumber">36</span>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/far-away-error.jpg" alt="There was an error far away from here"></p>
+
+      
+      <span class="pagenumber">37</span>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Circuit Breaker Pattern</h3>
+        <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">const</span> breaker = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CircuitBreaker</span>({
+  <span class="hljs-attr">service</span>: <span class="hljs-string">'payments-api'</span>,
+  <span class="hljs-attr">failureThreshold</span>: <span class="hljs-number">5</span>,
+  <span class="hljs-attr">resetTimeout</span>: <span class="hljs-number">30000</span>
+});
+
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">processPayment</span>(<span class="hljs-params">order</span>) {
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> breaker.<span class="hljs-title function_">execute</span>(<span class="hljs-function">() =&gt;</span> paymentsApi.<span class="hljs-title function_">process</span>(order));
+  } <span class="hljs-keyword">catch</span> (error) {
+    <span class="hljs-keyword">if</span> (error.<span class="hljs-property">type</span> === <span class="hljs-string">'CIRCUIT_OPEN'</span>) {
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> <span class="hljs-title function_">fallbackPaymentProcess</span>(order);
+    }
+    <span class="hljs-keyword">throw</span> error;
+  }
+}
+</code></pre>
+<ul>
+<li>Prevents cascading failures</li>
+<li>Monitors for failures in external service calls</li>
+<li>Automatically opens circuit when failure threshold reached</li>
+</ul>
+
+      
+      <span class="pagenumber">38</span>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Encapsulating Behavior in Error Objects</h3>
+        <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">QueryError</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Error</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params">message, query</span>) {
+    <span class="hljs-variable language_">super</span>(message);
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">type</span> = <span class="hljs-string">'DatabaseError'</span>;
+    <span class="hljs-variable language_">this</span>.<span class="hljs-property">query</span> = query;
+  }
+  
+  <span class="hljs-title function_">report</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">`Query Error: <span class="hljs-subst">${<span class="hljs-variable language_">this</span>.query}</span>`</span>); 
+    monitoring.<span class="hljs-title function_">captureException</span>(<span class="hljs-variable language_">this</span>);
+  }
+  
+  <span class="hljs-title function_">alert</span>(<span class="hljs-params"></span>) {
+    <span class="hljs-keyword">if</span> (<span class="hljs-variable language_">this</span>.<span class="hljs-property">code</span> &gt;= <span class="hljs-number">500</span>) {
+      alerting.<span class="hljs-title function_">sendAlert</span>({
+        <span class="hljs-attr">level</span>: <span class="hljs-string">'critical'</span>,
+        <span class="hljs-attr">service</span>: <span class="hljs-string">'database'</span>,
+        <span class="hljs-attr">details</span>: <span class="hljs-variable language_">this</span>
+      });
+    }
+  }
+}</code></pre>
+
+      
+      <span class="pagenumber">39</span>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Encapsulating Behavior in Error Objects: Usage</h3>
+        <p>Moves the knowledge of how an error should be handled inside the error itself.</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">try</span> {
+  db.<span class="hljs-title function_">select</span>(<span class="hljs-string">`SELECT ...`</span>)
+} <span class="hljs-keyword">catch</span> (error) {
+  <span class="hljs-keyword">if</span> (error <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">QueryError</span>) {
+    error.<span class="hljs-title function_">report</span>();
+    error.<span class="hljs-title function_">alert</span>();
+  }
+}
+</code></pre>
+
+      
+      <span class="pagenumber">40</span>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Advice for better error handling</h3>
+        <ul>
+<li>Think about all possible failure modes</li>
+<li>Allow your system to recover gracefully</li>
+<li>Log as much relevant context as possible</li>
+<li>Setup monitoring &amp; alerting on critical paths</li>
+<li><strong>Not all problems are errors</strong></li>
+</ul>
+<p><em>None the strategies we've looked at here take into account purely logical errors!</em></p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-string">"1"</span> + <span class="hljs-number">1</span> == <span class="hljs-number">2</span> <span class="hljs-comment">// false</span>
+</code></pre>
+<ul>
+<li>Use assertions in sensitive and critical paths to ensure correctness</li>
+</ul>
+
+      
+      <span class="pagenumber">41</span>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Conclusion</h3>
+        <ul>
+<li>throw/catch is unavoidable in JavaScript
+<ul>
+<li>too entrenched in the language already</li>
+<li>libraries use it, so fighting against it is an uphill battle</li>
+</ul>
+</li>
+<li>There is no elegant, unobtrusive, magic solution to error handling
+<ul>
+<li>Different error handling approaches suit different scenarios</li>
+</ul>
+</li>
+<li>Consider:
+<ul>
+<li>Developer experience</li>
+<li>Performance requirements</li>
+<li>Language idioms</li>
+<li>System boundaries</li>
+<li>Failure modes</li>
+</ul>
+</li>
+</ul>
+
+      
+      <span class="pagenumber">42</span>
+      </article>
+  
+  
+
+      <article class="thanks">
+        <h1>Thank you!</h1>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Mihail Mikov
+  </p>
+  
+
+  
+  <p>
+    Staff Enginner, SumUp
+  </p>
+  
+
+  
+  <p>
+    18.03.2025
+  </p>
+  
+
+          </div>
+        
+      </article>
+
+    <div class="slide-area" id="prev-slide-area"></div><div class="slide-area" id="next-slide-area"></div></section>
+
+    <div id="help" style="display: none;">
+      Use the left and right arrow keys or click the left and right
+      edges of the page to navigate between slides.<br>
+      (Press 'H' or navigate to hide this message.)
+    </div>
+
+    
+    <script src="./Throw away your try_catch_files/play.js.download"></script>
+    
+
+    <script src="./Throw away your try_catch_files/highlight.min.js.download"></script>
+
+    <script src="./Throw away your try_catch_files/highlight-zig.js.download"></script>
+    <script src="./Throw away your try_catch_files/go.min.js.download"></script>
+    <script src="./Throw away your try_catch_files/ocaml.min.js.download"></script>
+    <script>hljs.highlightAll();</script>
+  
+
+<link rel="stylesheet" type="text/css" href="./Throw away your try_catch_files/css"><link rel="stylesheet" type="text/css" href="./Throw away your try_catch_files/styles.css"></body></html>
