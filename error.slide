@@ -151,7 +151,7 @@ function showDashboard() {
 
 * prevents code from blowing up completely
 * provides only a very crude resolution mechanism
-* no way to continue normal exectution after the error is thrown
+* no way to continue normal exectution after an error is thrown
 
 ## Problem: Multiple catch blocks
 
@@ -418,7 +418,7 @@ if err != nil {
 
 ## Zig's Error Handling
 
-Zig implements some nice syntax sugar on top of go's model
+Zig implements some nice syntax sugar on top of a model similar to go's
 
 ```zig
 fn readValue() !u32 {
@@ -507,7 +507,7 @@ _Note: This is psudo code!_
 
 ```javascript
 function getData() {
-  // NOTE: this is NOT JavaScript
+  // NOTE: this is NOT possible in JavaScript
   perform log.Info("Logging can be handled as an effect")
 
   // internally get might perform a throw RequestError
@@ -522,17 +522,27 @@ do {
   // actual implementation of the get effect
   resume with data; // Continue execution with the returned value
 } handle log.Info {
-  // actual implementation of logging
+  *// actual implementation of logging
 } handle RequestError {
   // as with throw catch, the first handle block up the stack "catches" the operation
 }
 ```
+
+## Algebraic Effects: Explanation
+
+* **Effect Handlers**: Operations like `perform log.Info()` and `perform http.Get()` are effects that are captured and handled by handlers further up the call stack
+
+* **Resumable Execution**: Unlike traditional exceptions, these effects can be handled and then execution can resume from where the effect was performed using `resume with`
+
+* **Separation of Concerns**: The function getData() doesn't need to know how logging or HTTP requests are implemented - it just declares that it performs these effects
 
 ##
 
 ![Algebraic defects](./static/images/algebraic-defects.jpg)
 
 ## Error Handling in HTTP Request Handlers
+
+This is also an example of the continuation-passing style
 
 ```javascript
 // Express.js with middleware for error handling
@@ -561,7 +571,7 @@ app.use((err, req, res, next) => {
 
 ## Cascading Errors Across Service Boundaries
 
-**TODO:** Fix this slide!
+A lot can go wrong when stringing many services together...
 
 ```javascript
 async function getUserProfile(userId) {
@@ -589,6 +599,33 @@ async function getUserProfile(userId) {
 ##
 
 ![There was an error far away from here](./static/images/far-away-error.jpg)
+
+## Cascading Errors Across Service Boundaries
+
+* Network issues
+* Service avaialabilty
+* **Distributed transactions**
+* Often there isn't an obvious graceful recovery mechanism at the point of receiving the error
+
+## Deadline vs timeout based expiry of requests
+
+Giving a timeout to a function that calls multiple underlying services,
+doesn't make it clear whether the timeout applies for all or each.
+
+```javascript
+ // Using fetch with a timeout
+const controller = new AbortController();
+const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+fetch('https://api.example.com/data', { 
+  signal: controller.signal 
+})
+
+--- vs ---
+
+ // Using a deadline approach (NO BUILT-IN SUPPORT, YET)
+makeMultipleRequests({ deadline: Date.now() + 5000 })
+```
 
 ## Circuit Breaker Pattern
 
@@ -626,8 +663,9 @@ class QueryError extends Error {
   }
   
   report() {
-    console.error(`Query Error: ${this.query}`); 
+    console.error(`Query Error: ${this.query}`);
     monitoring.captureException(this);
+    this.report() = () => {}; // ensure that the error is reported at most once
   }
   
   alert() {
@@ -650,6 +688,10 @@ try {
   db.select(`SELECT ...`)
 } catch (error) {
   if (error instanceof QueryError) {
+    if (error.isRetryable()) {
+      // handle retry
+    }
+    // the caller doesn't always know whether they should log and/or alert
     error.report();
     error.alert();
   }
@@ -692,6 +734,6 @@ _None the strategies we've looked at here take into account purely logical error
 
 ## Useful resources
 
-* https://typesanitizer.com/blog/errors.html
-* https://go.dev/blog/error-handling-and-go
-* https://github.com/swiftlang/swift/blob/main/docs/ErrorHandlingRationale.md
+* [An epic treatise on error models](https://typesanitizer.com/blog/errors.html)
+* [Golang on error handling](https://go.dev/blog/error-handling-and-go)
+* [Swift's error handling rationale](https://github.com/swiftlang/swift/blob/main/docs/ErrorHandlingRationale.md)

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0035)http://127.0.0.1:3999/error.slide#1 -->
+<!-- saved from url=(0036)http://127.0.0.1:3999/error.slide#17 -->
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Throw away your try/catch</title>
     
@@ -18,7 +18,7 @@
 
     <section class="slides layout-widescreen" style="transform: scale(0.9824);">
 
-      <article class="current">
+      <article>
         <h1>Throw away your try/catch</h1>
         <h3 id="subtitle">An exploration of error handling strategies</h3>
         
@@ -48,7 +48,7 @@
 
   
   
-      <article class="next">
+      <article>
       
         <h3>About me</h3>
         <ul>
@@ -72,7 +72,7 @@
   
   
   
-      <article class="far-next">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/do-you-even-javascript.jpeg" alt="do you even javascript"></p>
@@ -83,7 +83,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3>Overview</h3>
         <p>Error handling is a question of <strong>reliability</strong>. Let's assume 2 main types of approaches:</p>
@@ -99,7 +99,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3>Many types of safety</h3>
         <p>There are many types of safety in computer science.</p>
@@ -121,7 +121,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/fix-some-bugs.jpg" alt="Let&#39;s fix some bugs!"></p>
@@ -132,7 +132,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3>Try/Catch in JavaScript</h3>
         <p>A try/catch block is the main mechanism for handling exceptions in JavaScript</p>
@@ -158,7 +158,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3>Problems with try/catch</h3>
         <ul>
@@ -176,7 +176,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/smart-no-throw.jpg" alt="How smart devs avoid the problem"></p>
@@ -187,7 +187,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3>Problem: hidden / confusing control flow</h3>
         <p>The actual path of execution might be confusing...</p>
@@ -219,7 +219,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3>Problem: Hiding errors</h3>
         <p>You might never find out an error has actually occrued</p>
@@ -246,7 +246,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/uncaught-exception.jpg" alt="Great plan, but flawed"></p>
@@ -257,7 +257,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3>Problem: The single catch block</h3>
         <p>This coding style is very popular, but is actually problematic</p>
@@ -274,7 +274,7 @@
 <ul>
 <li>prevents code from blowing up completely</li>
 <li>provides only a very crude resolution mechanism</li>
-<li>no way to continue normal exectution after the error is thrown</li>
+<li>no way to continue normal exectution after an error is thrown</li>
 </ul>
 
       
@@ -283,7 +283,7 @@
   
   
   
-      <article class="">
+      <article>
       
         <h3>Problem: Multiple catch blocks</h3>
         <p>We can handle different errors in specific ways,
@@ -311,7 +311,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article class="far-past">
       
         <h3>Problem: Handle each error individually</h3>
         <p>This is <em>most</em> correct, but it looks messy and tedious</p>
@@ -342,7 +342,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article class="past">
       
         <h3>Problem: Unknown failure modes</h3>
         <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">try</span> {
@@ -359,7 +359,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article class="current">
       
         <h3>Potential solution: Exceptions in type declarations (Java)</h3>
         <pre><code class="language-java hljs" data-highlighted="yes"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">readFile</span><span class="hljs-params">(String path)</span> <span class="hljs-keyword">throws</span> IOException, FileNotFoundException {
@@ -382,7 +382,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article class="next">
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/billion-dollar-mistake.jpg" alt="Billion dollar mistake"></p>
@@ -393,7 +393,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article class="far-next">
       
         <h3>Promises &amp; rejections</h3>
         <p>Exceptions are sync; rejections - async.</p>
@@ -636,7 +636,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
       <article class="">
       
         <h3>Zig's Error Handling</h3>
-        <p>Zig implements some nice syntax sugar on top of go's model</p>
+        <p>Zig implements some nice syntax sugar on top of a model similar to go's</p>
 <pre><code class="language-zig hljs" data-highlighted="yes"><span class="hljs-keyword">fn</span><span class="hljs-function"> readValue</span>() <span class="hljs-operator">!</span><span class="hljs-type">u32</span> {
     <span class="hljs-keyword">const</span> file = <span class="hljs-keyword">try</span> std.fs.cwd().openFile(<span class="hljs-string">"data.txt"</span>, .{});
     <span class="hljs-keyword">defer</span> file.close();
@@ -765,7 +765,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
         <h3>Algebraic Effects: Example</h3>
         <p><em>Note: This is psudo code!</em></p>
 <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">function</span> <span class="hljs-title function_">getData</span>(<span class="hljs-params"></span>) {
-  <span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> this is NOT JavaScript</span>
+  <span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> this is NOT possible in JavaScript</span>
   perform log.<span class="hljs-title class_">Info</span>(<span class="hljs-string">"Logging can be handled as an effect"</span>)
 
   <span class="hljs-comment">// internally get might perform a throw RequestError</span>
@@ -780,7 +780,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   <span class="hljs-comment">// actual implementation of the get effect</span>
   resume <span class="hljs-keyword">with</span> data; <span class="hljs-comment">// Continue execution with the returned value</span>
 } handle log.<span class="hljs-property">Info</span> {
-  <span class="hljs-comment">// actual implementation of logging</span>
+  *<span class="hljs-comment">// actual implementation of logging</span>
 } handle <span class="hljs-title class_">RequestError</span> {
   <span class="hljs-comment">// as with throw catch, the first handle block up the stack "catches" the operation</span>
 }
@@ -794,8 +794,18 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
       <article class="">
       
-        <h3></h3>
-        <p><img src="./Throw away your try_catch_files/algebraic-defects.jpg" alt="Algebraic defects"></p>
+        <h3>Algebraic Effects: Explanation</h3>
+        <ul>
+<li>
+<p><strong>Effect Handlers</strong>: Operations like <code>perform log.Info()</code> and <code>perform http.Get()</code> are effects that are captured and handled by handlers further up the call stack</p>
+</li>
+<li>
+<p><strong>Resumable Execution</strong>: Unlike traditional exceptions, these effects can be handled and then execution can resume from where the effect was performed using <code>resume with</code></p>
+</li>
+<li>
+<p><strong>Separation of Concerns</strong>: The function getData() doesn't need to know how logging or HTTP requests are implemented - it just declares that it performs these effects</p>
+</li>
+</ul>
 
       
       <span class="pagenumber">37</span>
@@ -805,8 +815,20 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
       <article class="">
       
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/algebraic-defects.jpg" alt="Algebraic defects"></p>
+
+      
+      <span class="pagenumber">38</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
         <h3>Error Handling in HTTP Request Handlers</h3>
-        <pre><code class="language-javascript hljs" data-highlighted="yes">app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/api/users/:id'</span>, <span class="hljs-title function_">async</span> (req, res, next) =&gt; {
+        <p>This is also an example of the continuation-passing style</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes">app.<span class="hljs-title function_">get</span>(<span class="hljs-string">'/api/users/:id'</span>, <span class="hljs-title function_">async</span> (req, res, next) =&gt; {
   <span class="hljs-keyword">try</span> {
     <span class="hljs-keyword">const</span> userId = req.<span class="hljs-property">params</span>.<span class="hljs-property">id</span>;
     <span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> database.<span class="hljs-title function_">findUser</span>(userId);
@@ -829,7 +851,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
 </code></pre>
 
       
-      <span class="pagenumber">38</span>
+      <span class="pagenumber">39</span>
       </article>
   
   
@@ -837,7 +859,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
       <article class="">
       
         <h3>Cascading Errors Across Service Boundaries</h3>
-        <p><strong>TODO:</strong> Fix this slide!</p>
+        <p>A lot can go wrong when stringing many services together...</p>
 <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getUserProfile</span>(<span class="hljs-params">userId</span>) {
   <span class="hljs-keyword">try</span> {
     <span class="hljs-comment">// Call user service</span>
@@ -861,7 +883,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
 </code></pre>
 
       
-      <span class="pagenumber">39</span>
+      <span class="pagenumber">40</span>
       </article>
   
   
@@ -872,7 +894,48 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
         <p><img src="./Throw away your try_catch_files/far-away-error.jpg" alt="There was an error far away from here"></p>
 
       
-      <span class="pagenumber">40</span>
+      <span class="pagenumber">41</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Cascading Errors Across Service Boundaries</h3>
+        <ul>
+<li>Network issues</li>
+<li>Service avaialabilty</li>
+<li><strong>Distributed transactions</strong></li>
+<li>Often there isn't an obvious graceful recovery mechanism at the point of receiving the error</li>
+</ul>
+
+      
+      <span class="pagenumber">42</span>
+      </article>
+  
+  
+  
+      <article class="">
+      
+        <h3>Deadline vs timeout based expiry of requests</h3>
+        <p>Giving a timeout to a function that calls multiple underlying services,
+doesn't make it clear whether the timeout applies for all or each.</p>
+<pre><code class="language-javascript hljs" data-highlighted="yes"> <span class="hljs-comment">// Using fetch with a timeout</span>
+<span class="hljs-keyword">const</span> controller = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AbortController</span>();
+<span class="hljs-keyword">const</span> timeoutId = <span class="hljs-built_in">setTimeout</span>(<span class="hljs-function">() =&gt;</span> controller.<span class="hljs-title function_">abort</span>(), <span class="hljs-number">5000</span>); <span class="hljs-comment">// 5 second timeout</span>
+
+<span class="hljs-title function_">fetch</span>(<span class="hljs-string">'https://api.example.com/data'</span>, { 
+  <span class="hljs-attr">signal</span>: controller.<span class="hljs-property">signal</span> 
+})
+
+--- vs ---
+
+ <span class="hljs-comment">// Using a deadline approach (NO BUILT-IN SUPPORT, YET)</span>
+<span class="hljs-title function_">makeMultipleRequests</span>({ <span class="hljs-attr">deadline</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + <span class="hljs-number">5000</span> })
+</code></pre>
+
+      
+      <span class="pagenumber">43</span>
       </article>
   
   
@@ -904,7 +967,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
 </ul>
 
       
-      <span class="pagenumber">41</span>
+      <span class="pagenumber">44</span>
       </article>
   
   
@@ -922,6 +985,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
   <span class="hljs-title function_">report</span>(<span class="hljs-params"></span>) {
     <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">`Query Error: <span class="hljs-subst">${<span class="hljs-variable language_">this</span>.query}</span>`</span>); 
     monitoring.<span class="hljs-title function_">captureException</span>(<span class="hljs-variable language_">this</span>);
+    <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">report</span>() = <span class="hljs-function">() =&gt;</span> {}; <span class="hljs-comment">// ensure that the error is reported at most once</span>
   }
   
   <span class="hljs-title function_">alert</span>(<span class="hljs-params"></span>) {
@@ -936,7 +1000,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
 }</code></pre>
 
       
-      <span class="pagenumber">42</span>
+      <span class="pagenumber">45</span>
       </article>
   
   
@@ -949,6 +1013,10 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
   db.<span class="hljs-title function_">select</span>(<span class="hljs-string">`SELECT ...`</span>)
 } <span class="hljs-keyword">catch</span> (error) {
   <span class="hljs-keyword">if</span> (error <span class="hljs-keyword">instanceof</span> <span class="hljs-title class_">QueryError</span>) {
+    <span class="hljs-keyword">if</span> (error.<span class="hljs-title function_">isRetryable</span>()) {
+      <span class="hljs-comment">// handle retry</span>
+    }
+    <span class="hljs-comment">// the caller doesn't always know whether they should log and/or alert</span>
     error.<span class="hljs-title function_">report</span>();
     error.<span class="hljs-title function_">alert</span>();
   }
@@ -956,7 +1024,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
 </code></pre>
 
       
-      <span class="pagenumber">43</span>
+      <span class="pagenumber">46</span>
       </article>
   
   
@@ -979,7 +1047,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
 </ul>
 
       
-      <span class="pagenumber">44</span>
+      <span class="pagenumber">47</span>
       </article>
   
   
@@ -990,7 +1058,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
         <p><img src="./Throw away your try_catch_files/galaxy-brain-error-handling.jpg" alt="just let it fail"></p>
 
       
-      <span class="pagenumber">45</span>
+      <span class="pagenumber">48</span>
       </article>
   
   
@@ -1022,7 +1090,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
 </ul>
 
       
-      <span class="pagenumber">46</span>
+      <span class="pagenumber">49</span>
       </article>
   
   
@@ -1031,13 +1099,13 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
       
         <h3>Useful resources</h3>
         <ul>
-<li>https://typesanitizer.com/blog/errors.html</li>
-<li>https://go.dev/blog/error-handling-and-go</li>
-<li>https://github.com/swiftlang/swift/blob/main/docs/ErrorHandlingRationale.md</li>
+<li><a href="https://typesanitizer.com/blog/errors.html" target="_blank" rel="noopener">An epic treatise on error models</a></li>
+<li><a href="https://go.dev/blog/error-handling-and-go" target="_blank" rel="noopener">Golang on error handling</a></li>
+<li><a href="https://github.com/swiftlang/swift/blob/main/docs/ErrorHandlingRationale.md" target="_blank" rel="noopener">Swift's error handling rationale</a></li>
 </ul>
 
       
-      <span class="pagenumber">47</span>
+      <span class="pagenumber">50</span>
       </article>
   
   
