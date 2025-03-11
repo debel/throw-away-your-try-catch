@@ -5,6 +5,20 @@ Mihail Mikov
 Staff Enginner, SumUp
 18.03.2025
 
+## About me
+
+* Hi, I'm Misho!
+
+* These days I write mostly golang, documentation and prompts...
+
+* I used to have a lot of hobbies, now I have a beautiful 10m old daugther 
+
+* I use neovim, btw
+
+##
+
+![do you even javascript](./static/images/do-you-even-javascript.jpeg)
+
 ## Overview
 
 Error handling is a question of **reliability**. Let's assume 2 main types of approaches:
@@ -31,7 +45,7 @@ There are many types of safety in computer science.
 
 ![Let's fix some bugs!](./static/images/fix-some-bugs.jpg)
 
-## Throw/Catch in JavaScript
+## Try/Catch in JavaScript
 
 A try/catch block is the main mechanism for handling exceptions in JavaScript
 
@@ -40,6 +54,7 @@ try {
   doSomethingThatMightThrow();
 } catch (error) {
   console.error("Error caught:", error.message);
+  // assume we are handling the error properly
 } finally {
   cleanup();
 }
@@ -52,12 +67,6 @@ try {
 
 : 1. catch wouldn't handle promise rejection
 : 2. cleanup might fail - then what?
-
-## Trigger warning!
-
-> _We believe that coupling exceptions to a control structure, as in the try-catch-finally idiom, results in convoluted code. **It also tends to encourage programmers to label too many ordinary errors, such as failing to open a file, as exceptional.**_
-
--- from the [Golang FAQ](https://go.dev/doc/faq#exceptions)
 
 ## Problems with try/catch
 
@@ -74,7 +83,7 @@ try {
 
 ## Problem: hidden / confusing control flow
 
-The actual path of execution might not be what we expect...
+The actual path of execution might be confusing...
 
 ```javascript
 function outer() {
@@ -244,13 +253,10 @@ fetch('https://api.example.com/data')
     }
     return response.json();
   })
+  .then(resp => transformResponse(resp))
   .then(data => useData(data))
   .catch(error => console.error("PROBLEM: Same issue as with the single catch block"));
 ```
-
-##
-
-![Async error](./static/images/async-error.jpg)
 
 ## Promises & exceptions
 
@@ -267,6 +273,7 @@ try {
     // PROBLEM: only handle SYNC errors generated from fetch will be caught here
 }
 ```
+Mixing promises with sync code can easily result in uncaught exceptions or unhandled promises
 
 ## Promises: chain ordering
 
@@ -285,6 +292,12 @@ fetch('https://api.example.com/data')
   .catch(error => log.error("Handles errors from either validateData or useData"));
 ```
 
+A _strategic_ `catch` in the middle of a promise can be very useful for fallbacks and recovery
+
+##
+
+![Async error](./static/images/async-error.jpg)
+
 ## Promise.all vs Promise.allSettled
 
 ```javascript
@@ -295,7 +308,7 @@ Promise.all([
 ]).then(([usersRes, productsRes]) => {
   // ALL succeeded
 }).catch(error => {
-  // ANY one failed
+  // ANY one failed!!
 });
 
 // Promise.allSettled - waits for all promises regardless of outcome
@@ -341,6 +354,13 @@ fetchUserData(123)
 * Treating errors as regular return values
 * Explicit error checking
 * No special control flow mechanisms
+* Can result in more verbose code and repeated manual error propagation
+
+## Trigger warning!
+
+> _We believe that coupling exceptions to a control structure, as in the try-catch-finally idiom, results in convoluted code. **It also tends to encourage programmers to label too many ordinary errors, such as failing to open a file, as exceptional.**_
+
+-- from the [Golang FAQ](https://go.dev/doc/faq#exceptions)
 
 ## Node.js Callbacks Pattern
 
@@ -420,7 +440,7 @@ fn main() !void {
 }
 ```
 
-## The Maybe Monad
+## Error handling with monads
 
 * **Result**: Represents a computation that might fail
 * **Maybe**: Encapsulates the presence or absence of a value
@@ -449,6 +469,10 @@ match read_config_file("config.json") {
     Err(e) => eprintln!("Failed to load config: {}", e),
 }
 ```
+
+##
+
+![endofunctors](./static/images/monads.jpg)
 
 ## OCaml's Error Handling
 
@@ -648,6 +672,10 @@ _None the strategies we've looked at here take into account purely logical error
 
 * Use assertions in sensitive and critical paths to ensure correctness
 
+##
+
+![just let it fail](./static/images/galaxy-brain-error-handling.jpg)
+
 ## Conclusion
 
 * throw/catch is unavoidable in JavaScript
@@ -661,3 +689,9 @@ _None the strategies we've looked at here take into account purely logical error
   * Language idioms
   * System boundaries
   * Failure modes
+
+## Useful resources
+
+* https://typesanitizer.com/blog/errors.html
+* https://go.dev/blog/error-handling-and-go
+* https://github.com/swiftlang/swift/blob/main/docs/ErrorHandlingRationale.md
