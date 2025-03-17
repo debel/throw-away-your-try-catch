@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0036)http://127.0.0.1:3999/error.slide#17 -->
+<!-- saved from url=(0035)http://127.0.0.1:3999/error.slide#1 -->
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>Throw away your try/catch</title>
     
@@ -16,9 +16,9 @@
 
   <body style="display: none" class="loaded">
 
-    <section class="slides layout-widescreen" style="transform: scale(0.9824);">
+    <section class="slides layout-widescreen" style="transform: scale(0.6408);">
 
-      <article>
+      <article class="current">
         <h1>Throw away your try/catch</h1>
         <h3 id="subtitle">An exploration of error handling strategies</h3>
         
@@ -48,7 +48,7 @@
 
   
   
-      <article>
+      <article class="next">
       
         <h3>About me</h3>
         <ul>
@@ -72,7 +72,7 @@
   
   
   
-      <article>
+      <article class="far-next">
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/do-you-even-javascript.jpeg" alt="do you even javascript"></p>
@@ -311,7 +311,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="far-past">
+      <article>
       
         <h3>Problem: Handle each error individually</h3>
         <p>This is <em>most</em> correct, but it looks messy and tedious</p>
@@ -342,7 +342,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="past">
+      <article>
       
         <h3>Problem: Unknown failure modes</h3>
         <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">try</span> {
@@ -359,7 +359,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="current">
+      <article>
       
         <h3>Potential solution: Exceptions in type declarations (Java)</h3>
         <pre><code class="language-java hljs" data-highlighted="yes"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">readFile</span><span class="hljs-params">(String path)</span> <span class="hljs-keyword">throws</span> IOException, FileNotFoundException {
@@ -382,7 +382,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="next">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/billion-dollar-mistake.jpg" alt="Billion dollar mistake"></p>
@@ -393,7 +393,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="far-next">
+      <article>
       
         <h3>Promises &amp; rejections</h3>
         <p>Exceptions are sync; rejections - async.</p>
@@ -418,7 +418,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Promises &amp; exceptions</h3>
         <p>Additionally there is a another <strong>hidden</strong> problem - <code>fetch</code> itself might throw</p>
@@ -440,7 +440,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Promises: chain ordering</h3>
         <p>The order of <code>then</code>s and <code>catch</code>es is very important</p>
@@ -463,7 +463,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/async-error.jpg" alt="Async error"></p>
@@ -474,7 +474,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Promise.all vs Promise.allSettled</h3>
         <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>([
@@ -507,7 +507,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Async/Await in JavaScript</h3>
         <p>Solves at least one problem - both sync and async errors are handled the same way</p>
@@ -534,7 +534,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Errors as values</h3>
         <ul>
@@ -550,7 +550,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Trigger warning!</h3>
         <blockquote>
@@ -564,7 +564,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Node.js Callbacks Pattern</h3>
         <p>Who remembers good old callback hell?</p>
@@ -591,7 +591,7 @@ but that is still doesn't prevent aforementioned issues</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Go's Error Handling</h3>
         <pre><code class="language-go hljs" data-highlighted="yes"><span class="hljs-function"><span class="hljs-keyword">func</span> <span class="hljs-title">LoadJsonConfig</span><span class="hljs-params">(path <span class="hljs-type">string</span>)</span></span> (*Config, <span class="hljs-type">error</span>) {
@@ -622,7 +622,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/errors-as-values.jpg" alt="Errors as values"></p>
@@ -633,7 +633,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3>Zig's Error Handling</h3>
         <p>Zig implements some nice syntax sugar on top of a model similar to go's</p>
@@ -662,7 +662,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3>Error handling with monads</h3>
         <ul>
@@ -678,7 +678,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3>Rust's Result and Option Types</h3>
         <pre><code class="language-rust hljs" data-highlighted="yes"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">read_config_file</span>(path: &amp;<span class="hljs-type">str</span>) <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">Result</span>&lt;Config, io::Error&gt; {
@@ -707,7 +707,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/monads.jpg" alt="endofunctors"></p>
@@ -718,7 +718,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3>OCaml's Error Handling</h3>
         <pre><code class="language-ocaml hljs" data-highlighted="yes"><span class="hljs-comment">(* Using Result type *)</span>
@@ -744,7 +744,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3>Algebraic Effects</h3>
         <ul>
@@ -760,7 +760,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3>Algebraic Effects: Example</h3>
         <p><em>Note: This is psudo code!</em></p>
@@ -792,7 +792,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3>Algebraic Effects: Explanation</h3>
         <ul>
@@ -813,7 +813,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/algebraic-defects.jpg" alt="Algebraic defects"></p>
@@ -824,7 +824,7 @@ data, err := LoadJsonConfig(<span class="hljs-string">"config.json"</span>)
   
   
   
-      <article class="">
+      <article>
       
         <h3>Error Handling in HTTP Request Handlers</h3>
         <p>This is also an example of the continuation-passing style</p>
@@ -856,7 +856,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
   
   
   
-      <article class="">
+      <article>
       
         <h3>Cascading Errors Across Service Boundaries</h3>
         <p>A lot can go wrong when stringing many services together...</p>
@@ -888,7 +888,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
   
   
   
-      <article class="">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/far-away-error.jpg" alt="There was an error far away from here"></p>
@@ -899,7 +899,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
   
   
   
-      <article class="">
+      <article>
       
         <h3>Cascading Errors Across Service Boundaries</h3>
         <ul>
@@ -915,7 +915,7 @@ app.<span class="hljs-title function_">use</span>(<span class="hljs-function">(<
   
   
   
-      <article class="">
+      <article>
       
         <h3>Deadline vs timeout based expiry of requests</h3>
         <p>Giving a timeout to a function that calls multiple underlying services,
@@ -940,7 +940,7 @@ doesn't make it clear whether the timeout applies for all or each.</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Circuit Breaker Pattern</h3>
         <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">const</span> breaker = <span class="hljs-keyword">new</span> <span class="hljs-title class_">CircuitBreaker</span>({
@@ -972,7 +972,7 @@ doesn't make it clear whether the timeout applies for all or each.</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Encapsulating Behavior in Error Objects</h3>
         <pre><code class="language-javascript hljs" data-highlighted="yes"><span class="hljs-keyword">class</span> <span class="hljs-title class_">QueryError</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_ inherited__">Error</span> {
@@ -983,7 +983,7 @@ doesn't make it clear whether the timeout applies for all or each.</p>
   }
   
   <span class="hljs-title function_">report</span>(<span class="hljs-params"></span>) {
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">`Query Error: <span class="hljs-subst">${<span class="hljs-variable language_">this</span>.query}</span>`</span>); 
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">`Query Error: <span class="hljs-subst">${<span class="hljs-variable language_">this</span>.query}</span>`</span>);
     monitoring.<span class="hljs-title function_">captureException</span>(<span class="hljs-variable language_">this</span>);
     <span class="hljs-variable language_">this</span>.<span class="hljs-title function_">report</span>() = <span class="hljs-function">() =&gt;</span> {}; <span class="hljs-comment">// ensure that the error is reported at most once</span>
   }
@@ -1005,7 +1005,7 @@ doesn't make it clear whether the timeout applies for all or each.</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Encapsulating Behavior in Error Objects: Usage</h3>
         <p>Moves the knowledge of how an error should be handled inside the error itself.</p>
@@ -1029,7 +1029,7 @@ doesn't make it clear whether the timeout applies for all or each.</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Advice for better error handling</h3>
         <ul>
@@ -1052,7 +1052,7 @@ doesn't make it clear whether the timeout applies for all or each.</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3></h3>
         <p><img src="./Throw away your try_catch_files/galaxy-brain-error-handling.jpg" alt="just let it fail"></p>
@@ -1063,7 +1063,7 @@ doesn't make it clear whether the timeout applies for all or each.</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Conclusion</h3>
         <ul>
@@ -1095,7 +1095,7 @@ doesn't make it clear whether the timeout applies for all or each.</p>
   
   
   
-      <article class="">
+      <article>
       
         <h3>Useful resources</h3>
         <ul>
@@ -1106,6 +1106,17 @@ doesn't make it clear whether the timeout applies for all or each.</p>
 
       
       <span class="pagenumber">50</span>
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3></h3>
+        <p><img src="./Throw away your try_catch_files/moss-off-on.jpeg" alt="moss poetry"></p>
+
+      
+      <span class="pagenumber">51</span>
       </article>
   
   
